@@ -1,0 +1,13 @@
+{
+    "drive": "G",
+    "tics": 10,
+    "connect_path": "\\\\192.9.201.8\\x\\ADMIN\\cb",
+    "db_path": "G:\\__FOR_BOT\\__LOGS_BD_FOR_BOT\\SPFS\\db.sqlite",
+    "regex": "6015078000ED50(3|8).*?\\.SFD",
+    "ip_admin": [
+        "192.9.201.22"
+      ],
+    "ip_user": [
+        "192.9.201.163"
+      ]      
+  }

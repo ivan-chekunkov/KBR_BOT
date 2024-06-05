@@ -1,0 +1,17 @@
+{
+    "drive": "J",
+    "tics": 10,
+    "connect_path": "\\\\192.9.201.8\\x\\ADMIN\\cb\\H",
+    "schemas": [
+      {
+        "base": "J:\\",
+        "arh": [
+          "J:\\arh\\"
+        ],
+        "move": "C:\\qwe\\",
+        "log": "C:\\qwe\\db.sqlite",
+        "regex": "414d512046524f4e.*",
+        "regex_path": "C:\\qwe\\kwt\\"
+      }
+    ]
+  }
