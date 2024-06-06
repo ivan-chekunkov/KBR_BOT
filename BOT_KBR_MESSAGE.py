@@ -27,24 +27,33 @@ SQL_UPDATE = """
         id = ?
 """
 
-logger.add('Logfile.log',
-           format="{time} {level} {message}",
-           level="DEBUG",
-           rotation="10 MB",
-           compression="zip")
+logger.add(
+    "Logfile.log",
+    format="{time} {level} {message}",
+    level="DEBUG",
+    rotation="10 MB",
+    compression="zip",
+)
 
 
 def net_use_drive():
-    if not Path('{}:\\'.format(SETTINGS["drive"])).exists():
+    if not Path("{}:\\".format(SETTINGS["drive"])).exists():
         while True:
             try:
-                res = os.system('cmd /c net use {}: {}'.format(
-                    SETTINGS["drive"], SETTINGS["connect_path"]))
+                res = os.system(
+                    "cmd /c net use {}: {}".format(
+                        SETTINGS["drive"], SETTINGS["connect_path"]
+                    )
+                )
                 if res == 2:
-                    logger.error("Не удалось примантировать диск {}".format(
-                        SETTINGS["drive"]))
-                    os.system('cmd /c "net use {}: /del"'.format(
-                        SETTINGS["drive"]))
+                    logger.error(
+                        "Не удалось примантировать диск {}".format(
+                            SETTINGS["drive"]
+                        )
+                    )
+                    os.system(
+                        'cmd /c "net use {}: /del"'.format(SETTINGS["drive"])
+                    )
                     time.sleep(10)
                     continue
             except Exception as error:
@@ -52,9 +61,10 @@ def net_use_drive():
                 continue
             finally:
                 break
-        if Path('{}:\\'.format(SETTINGS["drive"])).exists():
-            logger.info("Диск {} примонтирован успешно".format(
-                SETTINGS["drive"]))
+        if Path("{}:\\".format(SETTINGS["drive"])).exists():
+            logger.info(
+                "Диск {} примонтирован успешно".format(SETTINGS["drive"])
+            )
 
 
 def start():
@@ -65,7 +75,7 @@ def start():
         names_file = [x[1] for x in data]
         if not names_file:
             return
-        id_records = map(lambda x: (x, ), [x[0] for x in data])
+        id_records = map(lambda x: (x,), [x[0] for x in data])
         con.executemany(SQL_UPDATE, id_records)
         message = f"Файлы по КБР: {len(names_file)}"
         logger.info(message)
@@ -79,13 +89,15 @@ async def monitoring() -> None:
         await asyncio.sleep(SETTINGS["tics"])
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     try:
-        SETTINGS = load_settings(file_name='kbr_settings_message.json',
-                                 log=False)
+        SETTINGS = load_settings(
+            file_name="kbr_settings_message.json", log=False
+        )
     except Exception as error:
         logger.error(
-            "Ошибка при загрузке spfs_settings_message.json: {}".format(error))
+            "Ошибка при загрузке spfs_settings_message.json: {}".format(error)
+        )
     res = os.system('cmd /c "net use {}: /del"'.format(SETTINGS["drive"]))
     if res == 2:
         logger.error("Не удалось удалить диск {}".format(SETTINGS["drive"]))
@@ -93,4 +105,4 @@ if __name__ == '__main__':
     try:
         asyncio.run(monitoring())
     except KeyboardInterrupt:
-        logger.debug('Завершение работы программы!')
+        logger.debug("Завершение работы программы!")

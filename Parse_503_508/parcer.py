@@ -14,11 +14,13 @@ regex_503 = r"6015078000ED503.*"
 regex_508 = r"6015078000ED508.*"
 regex_201 = r"6015078000ED201.*"
 
-logger.add('Logfile.log',
-           format="{time} {level} {message}",
-           level="DEBUG",
-           rotation="10 MB",
-           compression="zip")
+logger.add(
+    "Logfile.log",
+    format="{time} {level} {message}",
+    level="DEBUG",
+    rotation="10 MB",
+    compression="zip",
+)
 
 
 def _iter_dir(path: Path) -> list[Path]:
@@ -65,7 +67,8 @@ def parcer_508(path: Path) -> None:
     with open("pattern_508.txt", "r", encoding="cp1251") as file:
         pattern = file.read()
     name_out_file = Path(SETTINGS["files_out"]).joinpath(
-        "{FAIL}{EDDate}_{SenderSWIFTBIC}_{EDNo}_508.txt".format(**result))
+        "{FAIL}{EDDate}_{SenderSWIFTBIC}_{EDNo}_508.txt".format(**result)
+    )
     with open(name_out_file, "w", encoding="utf-8") as file:
         file.write(pattern.format(**result))
     if result.get("error"):
@@ -89,8 +92,9 @@ def parcer_503(path: Path) -> None:
     tree = ETree.fromstring(xml_object)
     result = tree.attrib
     if result.get("IsNotice"):
-        result["IsNotice"] = ("Да" if result.get("IsNotice").lower() == "true"
-                              else "Нет")
+        result["IsNotice"] = (
+            "Да" if result.get("IsNotice").lower() == "true" else "Нет"
+        )
     for key, val in tree[2].attrib.items():
         key = key + "_1"
         result[key] = val
@@ -103,7 +107,8 @@ def parcer_503(path: Path) -> None:
     with open("pattern_503.txt", "r", encoding="cp1251") as file:
         pattern = file.read()
     name_out_file = Path(SETTINGS["files_out"]).joinpath(
-        "{EDDate}_{SenderSWIFTBIC}_{EDNo}_{FormatType}.txt".format(**result))
+        "{EDDate}_{SenderSWIFTBIC}_{EDNo}_{FormatType}.txt".format(**result)
+    )
     with open(name_out_file, "w", encoding="utf-8") as file:
         file.write(pattern.format(**result))
     logger.info(f"Файл: {path} - обработан!")
@@ -136,7 +141,8 @@ def parcer_201(path: Path) -> None:
     with open("pattern_201.txt", "r", encoding="cp1251") as file:
         pattern = file.read()
     name_out_file = Path(SETTINGS["files_out"]).joinpath(
-        "ERROR_{EDDate}_{EDNo}_201.txt".format(**result))
+        "ERROR_{EDDate}_{EDNo}_201.txt".format(**result)
+    )
     with open(name_out_file, "w", encoding="utf-8") as file:
         file.write(pattern.format(**result))
     logger.error(f"Файл: {path} - обработан!")
@@ -158,7 +164,8 @@ def _queue_files(*args: list[Path], func: Callable) -> None:
 
 
 def _split_files(
-        paths: list[Path]) -> tuple[list[Path], list[Path], list[Path]]:
+    paths: list[Path],
+) -> tuple[list[Path], list[Path], list[Path]]:
     file_503 = []
     file_508 = []
     file_201 = []
@@ -189,7 +196,8 @@ if __name__ == "__main__":
         logger.error("Ошибка при загрузке файла с настройками 'settings.json'")
         logger.error(error)
     paths_503, paths_508, for_del, paths_201 = _split_files(
-        _iter_dir(Path(SETTINGS["files_in"])))
+        _iter_dir(Path(SETTINGS["files_in"]))
+    )
     _queue_files(paths_503, func=parcer_503)
     _queue_files(paths_508, func=parcer_508)
     _queue_files(paths_201, func=parcer_201)
