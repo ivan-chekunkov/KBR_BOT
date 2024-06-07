@@ -11,17 +11,19 @@ from loguru import logger
 
 from settings import load as load_settings
 
+version = "1.7"
 
-def adapt_datetime_iso(val):
+
+def _adapt_datetime_iso(val):
     return val.isoformat()
 
 
-def convert_datetime(val):
+def _convert_datetime(val):
     return datetime.fromisoformat(val)
 
 
-sqlite3.register_adapter(datetime, adapt_datetime_iso)
-sqlite3.register_converter("datetime", convert_datetime)
+sqlite3.register_adapter(datetime, _adapt_datetime_iso)
+sqlite3.register_converter("datetime", _convert_datetime)
 
 
 SQL_CHECK_DB = """
@@ -63,8 +65,8 @@ logger.add(
 
 def _del_drive() -> int:
     return os.system(
-        'cmd /c "echo off|net use {}: /del /y>nul 2>&1"'.format(
-            SETTINGS["drive"]
+        'cmd /c "echo off|net use {}: /del /y{}"'.format(
+            SETTINGS["drive"], SETTINGS["silence_mode"]
         )
     )
 
@@ -78,8 +80,10 @@ def net_use_drive():
     while True:
         try:
             os.system(
-                "cmd /c net use {}: {} /y>nul 2>&1".format(
-                    SETTINGS["drive"], SETTINGS["connect_path"]
+                "cmd /c net use {}: {} /y{}".format(
+                    SETTINGS["drive"],
+                    SETTINGS["connect_path"],
+                    SETTINGS["silence_mode"],
                 )
             )
             if Path("{}:\\".format(SETTINGS["drive"])).exists():
@@ -115,6 +119,32 @@ def check_db_and_get_con(path: Path) -> sqlite3.Connection:
     return con
 
 
+def _copy_file(path_file: Path, new_path: Path, log: bool = True) -> None:
+    while True:
+        try:
+            shutil.copy(path_file, new_path)
+            break
+        except Exception as error:
+            logger.error(error)
+            time.sleep(5)
+            net_use_drive()
+    if log:
+        logger.info("Файл {} скопирован в {}".format(path_file, new_path))
+
+
+def _move_file(path_file: Path, new_path: Path) -> None:
+    _copy_file(path_file, new_path, log=False)
+    while True:
+        try:
+            path_file.unlink()
+            break
+        except Exception as error:
+            logger.error(error)
+            time.sleep(5)
+            net_use_drive()
+    logger.info("Файл {} перемещен в {}".format(path_file, new_path))
+
+
 def start() -> None:
     net_use_drive()
     for schema in SETTINGS["schemas"]:
@@ -123,17 +153,10 @@ def start() -> None:
             if path_file.is_file():
                 for path_arh in schema["arh"]:
                     new_path = Path(path_arh).joinpath(path_file.name)
-                    shutil.copy(path_file, new_path)
-                    logger.info(
-                        "Файл {} скопирован в {}".format(path_file, new_path)
-                    )
+                    _copy_file(path_file, new_path)
                 new_path = Path(schema["move"]).joinpath(path_file.name)
-                shutil.copy(path_file, new_path)
-                path_file.unlink()
+                _move_file(path_file, new_path)
                 file_list.append(path_file.name)
-                logger.info(
-                    "Файл {} перемещен в {}".format(path_file, new_path)
-                )
         if file_list and schema.get("log"):
             path_log = schema["log"]
             con = check_db_and_get_con(path_log)
@@ -165,6 +188,7 @@ def _exit():
 
 
 if __name__ == "__main__":
+    logger.debug("Запуск скрипта версии: {}".format(version))
     try:
         SETTINGS = load_settings(file_name="spfs_settings.json", log=False)
     except Exception as error:
@@ -176,6 +200,7 @@ if __name__ == "__main__":
         logger.debug("Включен режим тишины для комманд")
     else:
         SETTINGS["silence_mode"] = ""
+        logger.debug("Настройка silence_mode либо не указана либо равна false")
         logger.debug("Выключен режим тишины для комманд")
     res = _del_drive()
     if res == 2:
