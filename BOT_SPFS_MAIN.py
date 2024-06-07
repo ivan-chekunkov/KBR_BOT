@@ -16,13 +16,11 @@ def adapt_datetime_iso(val):
     return val.isoformat()
 
 
-sqlite3.register_adapter(datetime, adapt_datetime_iso)
-
-
 def convert_datetime(val):
     return datetime.fromisoformat(val)
 
 
+sqlite3.register_adapter(datetime, adapt_datetime_iso)
 sqlite3.register_converter("datetime", convert_datetime)
 
 
@@ -63,6 +61,14 @@ logger.add(
 )
 
 
+def _del_drive() -> int:
+    return os.system(
+        'cmd /c "echo off|net use {}: /del /y>nul 2>&1"'.format(
+            SETTINGS["drive"]
+        )
+    )
+
+
 def net_use_drive():
     try:
         if Path("{}:\\".format(SETTINGS["drive"])).exists():
@@ -72,7 +78,7 @@ def net_use_drive():
     while True:
         try:
             os.system(
-                "cmd /c net use {}: {}".format(
+                "cmd /c net use {}: {} /y>nul 2>&1".format(
                     SETTINGS["drive"], SETTINGS["connect_path"]
                 )
             )
@@ -84,9 +90,7 @@ def net_use_drive():
             else:
                 try:
                     time.sleep(5)
-                    os.system(
-                        'cmd /c "net use {}: /del"'.format(SETTINGS["drive"])
-                    )
+                    _del_drive()
                     time.sleep(5)
                 except Exception as error:
                     logger.error(error)
@@ -94,9 +98,7 @@ def net_use_drive():
             logger.error(error)
             try:
                 time.sleep(5)
-                os.system(
-                    'cmd /c "net use {}: /del"'.format(SETTINGS["drive"])
-                )
+                _del_drive()
                 time.sleep(5)
             except Exception as error:
                 logger.error(error)
@@ -157,7 +159,7 @@ async def monitoring() -> None:
 
 def _exit():
     logger.debug("Завершение работы программы!")
-    res = os.system('cmd /c "net use {}: /del"'.format(SETTINGS["drive"]))
+    res = _del_drive()
     if res == 2:
         logger.error("Не удалось удалить диск {}".format(SETTINGS["drive"]))
 
@@ -169,7 +171,13 @@ if __name__ == "__main__":
         logger.error(
             "Ошибка при загрузке spfs_settings.json: {}".format(error)
         )
-    res = os.system('cmd /c "net use {}: /del"'.format(SETTINGS["drive"]))
+    if SETTINGS.get("silence_mode"):
+        SETTINGS["silence_mode"] = ">nul 2>&1"
+        logger.debug("Включен режим тишины для комманд")
+    else:
+        SETTINGS["silence_mode"] = ""
+        logger.debug("Выключен режим тишины для комманд")
+    res = _del_drive()
     if res == 2:
         logger.error("Не удалось удалить диск {}".format(SETTINGS["drive"]))
     logger.debug("Запускаю мониторинг")

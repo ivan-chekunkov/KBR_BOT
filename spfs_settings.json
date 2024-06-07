@@ -1,5 +1,6 @@
 {
   "drive": "Y",
+  "silence_mode": false,
   "tics": 10,
   "connect_path": "\\\\192.9.201.8\\x",
   "schemas": [
