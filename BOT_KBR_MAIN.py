@@ -31,7 +31,7 @@ SQL_CREATE_DB = """
     )
 """
 
-SQL_INSERT_LOGS = """   
+SQL_INSERT_LOGS = """
     INSERT INTO
         LOGS (name, cheked)
     VALUES

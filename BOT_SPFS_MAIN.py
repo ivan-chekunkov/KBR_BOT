@@ -11,6 +11,21 @@ from loguru import logger
 
 from settings import load as load_settings
 
+
+def adapt_datetime_iso(val):
+    return val.isoformat()
+
+
+sqlite3.register_adapter(datetime, adapt_datetime_iso)
+
+
+def convert_datetime(val):
+    return datetime.fromisoformat(val)
+
+
+sqlite3.register_converter("datetime", convert_datetime)
+
+
 SQL_CHECK_DB = """
     SELECT
         count(*)
@@ -94,8 +109,7 @@ def check_db_and_get_con(path: Path) -> sqlite3.Connection:
         for row in data:
             if row[0] == 0:
                 logger.info("База была пустой")
-                con.execute(SQL_DROP_DB)
-                con.execute(SQL_CREATE_DB)
+                con.executescript(";\n".join((SQL_DROP_DB, SQL_CREATE_DB)))
     return con
 
 
@@ -141,6 +155,13 @@ async def monitoring() -> None:
         await asyncio.sleep(SETTINGS["tics"])
 
 
+def _exit():
+    logger.debug("Завершение работы программы!")
+    res = os.system('cmd /c "net use {}: /del"'.format(SETTINGS["drive"]))
+    if res == 2:
+        logger.error("Не удалось удалить диск {}".format(SETTINGS["drive"]))
+
+
 if __name__ == "__main__":
     try:
         SETTINGS = load_settings(file_name="spfs_settings.json", log=False)
@@ -155,4 +176,4 @@ if __name__ == "__main__":
     try:
         asyncio.run(monitoring())
     except KeyboardInterrupt:
-        logger.debug("Завершение работы программы!")
+        _exit()
