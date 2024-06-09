@@ -65,7 +65,7 @@ logger.add(
 
 def _del_drive() -> int:
     return os.system(
-        'cmd /c "echo off|net use {}: /del /y{}"'.format(
+        'cmd /c "net use {}: /del /y{}"'.format(
             SETTINGS["drive"], SETTINGS["silence_mode"]
         )
     )

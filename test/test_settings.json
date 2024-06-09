@@ -1,0 +1,7 @@
+{
+    "drive": "J",
+    "tics": 10,
+    "silence_mode": true,
+    "connect_path": "\\\\192.9.201.8\\x\\ADMIN\\cb\\H",
+    "base": "J:\\"
+  }
