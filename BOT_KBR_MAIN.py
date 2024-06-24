@@ -11,6 +11,8 @@ from loguru import logger
 
 from settings import load as load_settings
 
+version = "1.6"
+
 SQL_CHECK_DB = """
     SELECT
         count(*)
@@ -147,6 +149,7 @@ async def monitoring() -> None:
 
 
 if __name__ == "__main__":
+    logger.debug("Запуск скрипта версии: {}".format(version))
     try:
         SETTINGS = load_settings(file_name="kbr_settings.json", log=False)
     except Exception as error:

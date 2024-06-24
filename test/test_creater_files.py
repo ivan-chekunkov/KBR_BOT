@@ -66,7 +66,7 @@ def net_use_drive():
 
 def create_files():
     net_use_drive()
-    for i in range(15):
+    for i in range(2):
         rand = "".join(map(str, [random.randint(0, 10) for _ in range(10)]))
         path = Path(SETTINGS["base"]).joinpath(f"{i}_{rand}.txt")
         text = "".join(map(chr, [random.randint(50, 100) for _ in range(100)]))
@@ -108,7 +108,6 @@ if __name__ == "__main__":
     logger.debug("Запускаю мониторинг")
     print(SETTINGS)
     try:
-        # asyncio.run(monitoring())
-        print(SETTINGS)
+        asyncio.run(monitoring())
     except KeyboardInterrupt:
         _exit()

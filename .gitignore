@@ -4,3 +4,12 @@ in
 new
 backup
 __pycache__
+Logfile.log
+build
+dist
+files_in
+files_out
+kvt
+arh
+temp
+tools

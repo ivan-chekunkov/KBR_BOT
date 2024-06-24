@@ -10,6 +10,8 @@ from loguru import logger
 
 from settings import load as load_settings
 
+version = "1.5"
+
 regex_503 = r"6015078000ED503.*"
 regex_508 = r"6015078000ED508.*"
 regex_201 = r"6015078000ED201.*"
@@ -189,6 +191,7 @@ def print_error(text: str) -> None:
 
 
 if __name__ == "__main__":
+    logger.debug("Запуск скрипта версии: {}".format(version))
     try:
         SETTINGS = load_settings("settings.json", log=True, handler="f")
         logger.debug("Файл с настройками 'settings.json' загружен")

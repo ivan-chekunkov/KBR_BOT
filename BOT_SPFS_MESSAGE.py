@@ -10,6 +10,8 @@ from loguru import logger
 
 from settings import load as load_settings
 
+version = "1.3"
+
 SQL_REQ = """
     SELECT
         *
@@ -97,6 +99,7 @@ async def monitoring() -> None:
 
 
 if __name__ == "__main__":
+    logger.debug("Запуск скрипта версии: {}".format(version))
     try:
         SETTINGS = load_settings(
             file_name="spfs_settings_message.json", log=False
