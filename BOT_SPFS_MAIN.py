@@ -6,12 +6,13 @@ import time
 
 from datetime import datetime
 from pathlib import Path
+from typing import Generator
 
 from loguru import logger
 
 from settings import load as load_settings
 
-version = "1.7"
+version = "1.8"
 
 
 def _adapt_datetime_iso(val):
@@ -109,7 +110,10 @@ def net_use_drive():
 
 
 def check_db_and_get_con(path: Path) -> sqlite3.Connection:
-    con = sqlite3.connect(path)
+    try:
+        con = sqlite3.connect(path)
+    except Exception as error:
+        logger.error("Неудачный коннект к базе: {}".format(error))
     with con:
         data = con.execute(SQL_CHECK_DB)
         for row in data:
@@ -145,18 +149,34 @@ def _move_file(path_file: Path, new_path: Path) -> None:
     logger.info("Файл {} перемещен в {}".format(path_file, new_path))
 
 
+def _iter_dir(path: Path) -> Generator[Path, None, None]:
+    while True:
+        try:
+            paths = path.iterdir()
+            result = filter(Path.is_file, paths)
+            return result
+        except OSError:
+            logger.error(
+                "Ошибка OSError, при нахождении пути к {}".format(path)
+            )
+        except Exception as error:
+            logger.error("Ошибка при нахождении пути к {}".format(path))
+            logger.error(error)
+        time.sleep(5)
+        net_use_drive()
+
+
 def start() -> None:
     net_use_drive()
     for schema in SETTINGS["schemas"]:
         file_list = []
-        for path_file in Path(schema["base"]).iterdir():
-            if path_file.is_file():
-                for path_arh in schema["arh"]:
-                    new_path = Path(path_arh).joinpath(path_file.name)
-                    _copy_file(path_file, new_path)
-                new_path = Path(schema["move"]).joinpath(path_file.name)
-                _move_file(path_file, new_path)
-                file_list.append(path_file.name)
+        for path_file in _iter_dir(Path(schema["base"])):
+            for path_arh in schema["arh"]:
+                new_path = Path(path_arh).joinpath(path_file.name)
+                _copy_file(path_file, new_path)
+            new_path = Path(schema["move"]).joinpath(path_file.name)
+            _move_file(path_file, new_path)
+            file_list.append(path_file.name)
         if file_list and schema.get("log"):
             path_log = schema["log"]
             con = check_db_and_get_con(path_log)
