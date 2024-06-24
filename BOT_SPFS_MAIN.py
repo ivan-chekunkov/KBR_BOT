@@ -152,6 +152,7 @@ def _move_file(path_file: Path, new_path: Path) -> None:
 def _iter_dir(path: Path) -> Generator[Path, None, None]:
     while True:
         try:
+            logger.debug("Пробую iterdir")
             paths = path.iterdir()
             result = filter(Path.is_file, paths)
             return result

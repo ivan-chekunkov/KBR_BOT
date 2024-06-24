@@ -71,7 +71,10 @@ def net_use_drive():
 
 def start():
     net_use_drive()
-    con = sqlite3.connect(SETTINGS["db_path"])
+    try:
+        con = sqlite3.connect(SETTINGS["db_path"])
+    except Exception as error:
+        logger.error("Неудачный коннект к базе: {}".format(error))
     with con:
         data = list(con.execute(SQL_REQ))
         names_file = [x[1] for x in data]
