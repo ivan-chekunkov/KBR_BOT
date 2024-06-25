@@ -9,10 +9,18 @@
   "schemas": [
     {
       "base": "J:\\",
-      "arh": ["J:\\arh\\"],
-      "move": "C:\\qwe\\",
-      "regex": "414d512046524f4e.*",
-      "regex_path": "C:\\qwe\\kwt\\"
+      "patterns": [
+        {
+          "arh": ["J:\\arh\\"],
+          "move": "C:\\qwe\\",
+          "regex": "414d512046524f4e.*"
+        },
+        {
+          "arh": ["J:\\arh\\"],
+          "move": "C:\\qwe\\",
+          "regex": ".*"
+        }
+      ]
     },
     {
       "base": "Y:\\ADMIN\\cb\\H",
