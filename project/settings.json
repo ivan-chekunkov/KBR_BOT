@@ -1,0 +1,28 @@
+{
+  "profile": "KBR_MAIN",
+  "connect_drive": {
+    "drive": "J",
+    "connect_path": "\\\\192.9.201.8\\x\\ADMIN\\cb\\H"
+  },
+  "silence_mode": true,
+  "tics": 10,
+  "schemas": [
+    {
+      "base": "J:\\",
+      "arh": ["J:\\arh\\"],
+      "move": "C:\\qwe\\",
+      "regex": "414d512046524f4e.*",
+      "regex_path": "C:\\qwe\\kwt\\"
+    },
+    {
+      "base": "Y:\\ADMIN\\cb\\H",
+      "arh": ["Y:\\TEST\\arh\\"],
+      "move": "Y:\\TEST\\out\\"
+    }
+  ],
+  "db_path": "G:\\__FOR_BOT\\__LOGS_BD_FOR_BOT\\SPFS\\db.sqlite",
+  "message_schemas": [
+    { "regex": "*?.SFD", "ip": ["192.9.201.22"] },
+    { "regex": "6015078000ED(503|508|201).*?\\.SFD", "ip": ["192.9.201.163"] }
+  ]
+}

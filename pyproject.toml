@@ -10,6 +10,7 @@ python = "^3.12, <3.13"
 loguru = "^0.7.2"
 pyinstaller = "^6.7.0"
 ruff = "^0.4.8"
+isort = "^5.13.2"
 
 [tool.poetry.dev-dependencies]
 
