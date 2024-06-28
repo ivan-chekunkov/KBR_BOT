@@ -1,19 +1,12 @@
 import json
 import os
-import sys
+
 
 from loguru import logger
 
+from tools import _cls_mode_run
 
-def _cls_mode_run(cls_mode: bool) -> bool:
-    if cls_mode:
-        logger.debug(
-            "Завершаю работу приложения из модуля = {}".format(
-                os.path.basename(__file__).split(".")[0]
-            )
-        )
-        sys.exit()
-    return False
+NAME_MODULE = os.path.basename(__file__).split(".")[0]
 
 
 def _load_json(file_name: str, cls_mode: bool, encoding: str) -> dict | None:
@@ -73,3 +66,4 @@ def _create_log():
 if __name__ == "__main__":
     _create_log()
     logger.info(load())
+    _cls_mode_run(NAME_MODULE)

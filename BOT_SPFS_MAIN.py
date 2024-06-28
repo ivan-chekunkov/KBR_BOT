@@ -12,7 +12,7 @@ from loguru import logger
 
 from settings import load as load_settings
 
-version = "1.8"
+version = "1.8.1"
 
 
 def _adapt_datetime_iso(val):
@@ -152,7 +152,6 @@ def _move_file(path_file: Path, new_path: Path) -> None:
 def _iter_dir(path: Path) -> Generator[Path, None, None]:
     while True:
         try:
-            logger.debug("Пробую iterdir")
             paths = path.iterdir()
             result = filter(Path.is_file, paths)
             return result
@@ -227,7 +226,12 @@ if __name__ == "__main__":
     if res == 2:
         logger.error("Не удалось удалить диск {}".format(SETTINGS["drive"]))
     logger.debug("Запускаю мониторинг")
-    try:
-        asyncio.run(monitoring())
-    except KeyboardInterrupt:
-        _exit()
+    while True:
+        try:
+            asyncio.run(monitoring())
+            input()
+        except KeyboardInterrupt:
+            _exit()
+        except Exception as error:
+            logger.error(error)
+            time.sleep(10)
