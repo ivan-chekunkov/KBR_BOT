@@ -4,6 +4,7 @@ import shutil
 import sqlite3
 import time
 
+from datetime import datetime
 from pathlib import Path
 from re import search
 
@@ -11,7 +12,7 @@ from loguru import logger
 
 from settings import load as load_settings
 
-version = "1.7"
+version = "1.8"
 
 SQL_CHECK_DB = """
     SELECT
@@ -29,15 +30,16 @@ SQL_CREATE_DB = """
     CREATE TABLE LOGS (
         id INTEGER PRIMARY KEY,
         name VARCHAR(100),
-        cheked int
+        cheked int,
+        created date
     )
 """
 
 SQL_INSERT_LOGS = """
     INSERT INTO
-        LOGS (name, cheked)
+        LOGS (name, cheked, created)
     VALUES
-        (?, ?)
+        (?, ?, ?)
 """
 
 logger.add(
@@ -49,6 +51,14 @@ logger.add(
 )
 
 
+def _del_drive() -> int:
+    return os.system(
+        'cmd /c "net use {}: /del /y{}"'.format(
+            SETTINGS["drive"], SETTINGS["silence_mode"]
+        )
+    )
+
+
 def net_use_drive():
     try:
         if Path("{}:\\".format(SETTINGS["drive"])).exists():
@@ -58,8 +68,10 @@ def net_use_drive():
     while True:
         try:
             os.system(
-                "cmd /c net use {}: {}".format(
-                    SETTINGS["drive"], SETTINGS["connect_path"]
+                "cmd /c net use {}: {} /y{}".format(
+                    SETTINGS["drive"],
+                    SETTINGS["connect_path"],
+                    SETTINGS["silence_mode"],
                 )
             )
             if Path("{}:\\".format(SETTINGS["drive"])).exists():
@@ -70,9 +82,7 @@ def net_use_drive():
             else:
                 try:
                     time.sleep(5)
-                    os.system(
-                        'cmd /c "net use {}: /del"'.format(SETTINGS["drive"])
-                    )
+                    _del_drive()
                     time.sleep(5)
                 except Exception as error:
                     logger.error(error)
@@ -80,23 +90,23 @@ def net_use_drive():
             logger.error(error)
             try:
                 time.sleep(5)
-                os.system(
-                    'cmd /c "net use {}: /del"'.format(SETTINGS["drive"])
-                )
+                _del_drive()
                 time.sleep(5)
             except Exception as error:
                 logger.error(error)
 
 
 def check_db_and_get_con(path: Path) -> sqlite3.Connection:
-    con = sqlite3.connect(path)
+    try:
+        con = sqlite3.connect(path)
+    except Exception as error:
+        logger.error("Неудачный коннект к базе: {}".format(error))
     with con:
         data = con.execute(SQL_CHECK_DB)
         for row in data:
             if row[0] == 0:
                 logger.info("База была пустой")
-                con.execute(SQL_DROP_DB)
-                con.execute(SQL_CREATE_DB)
+                con.executescript(";\n".join((SQL_DROP_DB, SQL_CREATE_DB)))
     return con
 
 
@@ -131,7 +141,10 @@ def start() -> None:
         if file_list and schema.get("log"):
             path_log = schema["log"]
             con = check_db_and_get_con(path_log)
-            data = list(map(lambda x: (x, 0), [x for x in file_list]))
+            now_date = datetime.now()
+            data = list(
+                map(lambda x: (x, 0, now_date), [x for x in file_list])
+            )
             with con:
                 try:
                     con.executemany(SQL_INSERT_LOGS, data)
@@ -140,14 +153,6 @@ def start() -> None:
                     logger.error(
                         "Ошибка при добавлении в базу: {}".format(error)
                     )
-
-
-def _del_drive() -> int:
-    return os.system(
-        'cmd /c "net use {}: /del /y{}"'.format(
-            SETTINGS["drive"], SETTINGS["silence_mode"]
-        )
-    )
 
 
 async def monitoring() -> None:
