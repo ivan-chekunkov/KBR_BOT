@@ -11,7 +11,7 @@ from loguru import logger
 
 from settings import load as load_settings
 
-version = "1.6"
+version = "1.7"
 
 SQL_CHECK_DB = """
     SELECT
@@ -142,10 +142,25 @@ def start() -> None:
                     )
 
 
+def _del_drive() -> int:
+    return os.system(
+        'cmd /c "net use {}: /del /y{}"'.format(
+            SETTINGS["drive"], SETTINGS["silence_mode"]
+        )
+    )
+
+
 async def monitoring() -> None:
     while True:
         start()
         await asyncio.sleep(SETTINGS["tics"])
+
+
+def _exit():
+    logger.debug("Завершение работы программы!")
+    res = _del_drive()
+    if res == 2:
+        logger.error("Не удалось удалить диск {}".format(SETTINGS["drive"]))
 
 
 if __name__ == "__main__":
@@ -153,14 +168,24 @@ if __name__ == "__main__":
     try:
         SETTINGS = load_settings(file_name="kbr_settings.json", log=False)
     except Exception as error:
-        logger.error(
-            "Ошибка при загрузке spfs_settings.json: {}".format(error)
-        )
-    res = os.system('cmd /c "net use {}: /del"'.format(SETTINGS["drive"]))
+        logger.error("Ошибка при загрузке kbr_settings.json: {}".format(error))
+    if SETTINGS.get("silence_mode"):
+        SETTINGS["silence_mode"] = ">nul 2>&1"
+        logger.debug("Включен режим тишины для комманд")
+    else:
+        SETTINGS["silence_mode"] = ""
+        logger.debug("Настройка silence_mode либо не указана либо равна false")
+        logger.debug("Выключен режим тишины для комманд")
+    res = _del_drive()
     if res == 2:
         logger.error("Не удалось удалить диск {}".format(SETTINGS["drive"]))
     logger.debug("Запускаю мониторинг")
-    try:
-        asyncio.run(monitoring())
-    except KeyboardInterrupt:
-        logger.debug("Завершение работы программы!")
+    while True:
+        try:
+            asyncio.run(monitoring())
+            input()
+        except KeyboardInterrupt:
+            _exit()
+        except Exception as error:
+            logger.error(error)
+            time.sleep(10)
