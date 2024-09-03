@@ -1,0 +1,10 @@
+{
+  "profile": "KBR_MAIN",
+  "connect_drive": {
+    "drive": "J",
+    "connect_path": "\\\\192.9.201.8\\x\\ADMIN\\cb\\H"
+  },
+  "base": "Y:\\ADMIN\\cb\\H",
+  "arh": ["Y:\\TEST\\arh\\"],
+  "move": "Y:\\TEST\\out\\"
+}

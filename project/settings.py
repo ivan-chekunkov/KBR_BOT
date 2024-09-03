@@ -19,19 +19,19 @@ def _load_json(file_name: str, cls_mode: bool, encoding: str) -> dict | None:
             except json.JSONDecodeError as error:
                 logger.critical("Некорректный файл настроек!")
                 logger.error(error)
-                if not _cls_mode_run(cls_mode=cls_mode):
+                if not _cls_mode_run(NAME_MODULE, cls_mode=cls_mode):
                     return None
             except Exception as error:
                 logger.critical("Некорректный файл настроек!")
                 logger.error(error)
-                if not _cls_mode_run(cls_mode=cls_mode):
+                if not _cls_mode_run(NAME_MODULE, cls_mode=cls_mode):
                     return None
     except (FileNotFoundError, LookupError) as error:
         logger.critical(
             "Ошибка при открытии файла настроек: {}!".format(file_name)
         )
         logger.error(error)
-        if not _cls_mode_run(cls_mode=cls_mode):
+        if not _cls_mode_run(NAME_MODULE, cls_mode=cls_mode):
             return None
     return result
 
@@ -48,7 +48,7 @@ def load(
         logger.critical(
             "Я не умею обрабатывать файлы данного типа: {}".format(extension)
         )
-        _cls_mode_run(cls_mode=cls_mode)
+        _cls_mode_run(NAME_MODULE, cls_mode=cls_mode)
         return None
     return result
 
@@ -65,5 +65,5 @@ def _create_log():
 
 if __name__ == "__main__":
     _create_log()
-    logger.info(load())
+    logger.info(load("test.json"))
     _cls_mode_run(NAME_MODULE)
