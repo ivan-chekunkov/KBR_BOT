@@ -1,0 +1,1 @@
+pyinstaller --onefile BOT_KBR_MAIN.py

@@ -32,8 +32,7 @@ def move_files():
     global WAIT_NEW_FILES
     files = Path("in").iterdir()
     for path_file in files:
-        shutil.copy(path_file, Path("out").joinpath(path_file.name))
-        path_file.unlink()
+        shutil.move(path_file, Path("out").joinpath(path_file.name))
         WAIT_NEW_FILES = WAIT_NEW_FILES + 1
 
 
